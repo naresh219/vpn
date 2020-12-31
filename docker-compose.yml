@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  wireguard:
+    image: linuxserver/wireguard
+    ports:
+      - 51820:51820/udp
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - /lib/modules:/lib/modules
+      - ./wg0.conf:/config/wg0.conf:ro
