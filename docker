@@ -1,0 +1,38 @@
+FROM ubuntu:20.04
+RUN apt update -y 
+RUN apt install iptables iproute2 wireguard -y && rm -rf /var/lib/apt/lists/*
+COPY wg0.conf /etc/wireguard/
+COPY run.sh /run.sh
+CMD ["/run.sh"]
+
+version: "2.1"
+services:
+  wireguard:
+    image: nareshyadav219/wg0
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - SERVERURL=auto #optional
+      - SERVERPORT=51820 #optional
+    volumes:
+      - /lib/modules:/lib/modules
+    ports:
+      - 51820:51820/udp
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+    
+    #!/bin/sh
+wg-quick up wg0
+finish () {
+    wg-quick down wg0
+    exit 0
+}
+trap finish TERM INT QUIT
+sleep infinity &
+wait $!
+
